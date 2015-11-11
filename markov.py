@@ -21,7 +21,7 @@ class markov_chain:
         self.level = level #level class variable
         self.obj_list = obj_list #list of objects
         self.pair_tb = {}
-        self.__fill_pair_tb(obj_list)
+        self.generate_prob_table()
         
         #TODO: add any more variables/data structs that you need(hint: you do) 
         #will probably need a probability/count table
