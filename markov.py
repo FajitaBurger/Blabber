@@ -48,18 +48,26 @@ class markov_chain:
 		
 		#here we only implement first level markov_chain
 		self.prob_table = dict();
-		i = 0;
-		while i < len(self.obj_list) - 1:
-			this = self.obj_list[i];
-			next = self.obj_list[i+1];
-			#print(this)
-			if this not in self.prob_table:
-				self.prob_table[this] = dict()
-			if next not in self.prob_table[this]:
-				self.prob_table[this][next] = 0
-			self.prob_table[this][next] = self.prob_table[this][next] + 1
-			i = i + 1
+		
+		buffers = list();
+		for buff_idx in range(0, self.level):
+			buffers.append(list())
 			
+		for i in range(0, len(self.obj_list) - 1):
+			for buff_idx in range(0, self.level):
+				this = self.obj_list[i]
+				next = self.obj_list[i+1]
+				buffers[buff_idx].append(self.obj_list[i])
+				if len(buffers[buff_idx]) > buff_idx + 1:
+					buffers[buff_idx].pop(0)
+				"print(buffers[buff_idx])"
+				if len(buffers[buff_idx]) == buff_idx + 1:
+					tup = tuple(buffers[buff_idx])
+					if tup not in self.prob_table:
+						self.prob_table[tup] = dict()
+					if next not in self.prob_table[tup]:
+						self.prob_table[tup][next] = 0
+					self.prob_table[tup][next] = self.prob_table[tup][next] + 1
 				
 		
 
@@ -84,15 +92,29 @@ class markov_chain:
 	#TODO repeat until you from a count length list. NOTE: for an nth level
 	#markov chain you will need to look up on the probability an n-length tuple
 	#once you've generated enough words!
-		this_obj = random.choice(self.obj_list)
+		this_word = random.choice(self.obj_list)
+		buffer = list()
 		ret_val = list()
 		for num in range(0, count):
-			m_list = []
-			dict = self.prob_table[this_obj]
+			buffer.append(this_word)
+			if len(buffer) > self.level + 1:
+				buffer.pop(0)
+			
+			for buff_idx in range (0, len(buffer)):
+				tup = tuple(buffer[buff_idx:len(buffer)])
+				if tup not in self.prob_table:
+					continue
+				else:
+					dict = self.prob_table[tup]
+					break
+			
+			m_list = list()
+			
 			for obj in dict:
 				m_list.append(obj)
-			this_obj = random.choice(m_list)
-			ret_val.append(this_obj)
+								
+			this_word = random.choice(m_list)
+			ret_val.append(this_word)
 		return ret_val
 			
 		

@@ -1,0 +1,108 @@
+Minilab 2 - Scheduling Algorithm + Synchonization
+
+Excercise 2:  Add code to schedule () function to impelement strict prioritry scheduling
+	process1>process2>...
+	
+	elseif (scheduling_algorithm == 1) {
+		while (1) {
+				int i = 0;
+				pid_t highest_priority_pid = 0;
+				for (i = 1; i < NPROCS; i++) {
+					if (proc_array[i].pstate == P_RUNNABLE) {
+						highest_priority_pid = i;
+						break;
+					}
+					
+				}
+				if (highest_priority_pid != 0)
+					run(&proc_array[highest_priority_pid]);
+					
+		}
+	}
+	
+Excercise 3:  Calculate average turnaroiund time and average wait time accross all four processes for scheduling algirhtm 0 and 1.  Assume priting 1 char takes1 millisecond and everything else is free
+	Turn Around Time: Time interval between job submission and jobn finsih
+		Scheduling Algorithm 0
+			1) RUNCOUNT*4 - 3
+			2) RUNCOUNT*4 - 2
+			3) RUNCOUNT*4 - 1
+			4) RUNCOUNT*4 - 0
+		Scheduling Algorithm 0
+			1) RUNCOUNT
+			2) RUNCOUNT*2
+			3) RUNCOUNT*3
+			4) RUNCOUNT*4
+	Wait Time:  Time interval between jobn sumbissoinand job start
+		Scheduling Algorithm 0
+			1) 0
+			2) 1
+			3) 2
+			4) 3
+		Scheduling Algorithm 0
+			1) 0
+			2) RUNCOUNT
+			3) RUNCOUNT*2
+			4) RUNCOUNT*3
+	
+Excercise 6: Scheduling Algorithm turn on clock interrupt to enable preemptive scheduling
+	void start (void) {
+		int i;
+		for (i = 0; i < RUNCOUNT; i ++) {
+			*cursorpos++ = PRINTCHAR;
+			sys_yield();
+		}
+		while(1) sys_yield();
+	}
+	this will cause problems in *cursorpos++ because actually mutlipel assemble intructions
+	4  ways to prevent synchonization problems:
+		1)  Add new syscall to print
+		2) 	Use the atomic function 
+			intx86sync.h 
+			
+			fetch_and_add() is atomic
+		3)  Use atomic function in intx86sync.h to implement spinlocks <- we discuss this
+		4)  implement system call to perform spinlocks
+		
+		
+	x86sync.h 
+		atomic_swap(uint32_t* addr, uint 32_t val);
+		/////equivalent code
+		void* oldval = *addr;
+		*addr = val;
+		return oldval;
+		
+		compare_and_swap(unint32 add, uint32_t expected, uint32_t desired)
+		////equivalent code
+		uint32_t actual = *add;
+		if (actual == expected) *addr = desired;
+		return actual;
+		
+		//same as compare_and_swap except always has 0 and 1 so for spinlock's mostly
+		//expensive bc lock memory bus so test test_and_set used instead : if(spinlock==0){while(test_and_set(&spinlock);)}
+		test_and_set(uint32_t* addr)
+		//equivalent code
+			oldval = *addr;
+			if (addr == 0) addr = 1;
+			return oldval;
+		
+		spinlock_acquire(spinlock) {
+			//while atomic swap returns the old value of the lock as 1, spin, when it returns 0, spinlock acquired so break 
+			while(atomic_swap(&spinlock, 1))
+		}
+		
+		spinlock_release(spinlock) {
+			//in modern x86 spinlock = 0 is find becasue corresponds to one mov instr
+			//for old versions and atomic swap is necessary
+		}
+	
+	
+	ADVANCED MATERIAL
+	1) hos do you make system clals without software trap instruction
+		-goal of system call is to switch from process level to kernel-level
+		-could cause an error
+		-could have os periodically interrupt processes and see if it wants a system call performed
+		-flexsc - flexible system call scheduling with exceptionless system calls (2010 OSDI)
+			-
+			
+			
+		-
